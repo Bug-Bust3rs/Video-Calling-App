@@ -1,25 +1,27 @@
 
 import React from 'react';
-
+import { ImPhoneHangUp } from "react-icons/im";
+import { FaVideoSlash , FaVideo } from "react-icons/fa";
+import { FaMicrophoneSlash , FaMicrophone } from "react-icons/fa6";
 const Controls = ({ isMuted, isVideoOn, toggleMute, toggleVideo, hangUp }) => (
-  <div className="absolute bottom-8 flex space-x-4 z-20">
+  <div className="absolute bottom-20 flex space-x-4 z-20">
     <button
       onClick={toggleMute}
-      className={`px-4 py-2 rounded-full ${isMuted ? 'bg-red-500' : 'bg-gray-200'} text-white`}
+      className={`px-6 py-6 text-3xl rounded-full ${isMuted ? 'bg-red-500' : 'bg-gray-200'} text-black`}
     >
-      {isMuted ? 'Unmute' : 'Mute'}
+      {isMuted ? <FaMicrophone/> : <FaMicrophoneSlash/>}
     </button>
     <button
       onClick={toggleVideo}
-      className={`px-4 py-2 rounded-full ${isVideoOn ? 'bg-gray-200' : 'bg-yellow-500'} text-white`}
+      className={`px-6 py-6 text-3xl rounded-full ${isVideoOn ? 'bg-gray-200' : 'bg-yellow-500'} text-black`}
     >
-      {isVideoOn ? 'Turn Off Video' : 'Turn On Video'}
+      {isVideoOn ? <FaVideoSlash/> : <FaVideo/>}
     </button>
     <button
       onClick={hangUp}
-      className="px-4 py-2 rounded-full bg-red-600 text-white"
+      className="px-6 py-6 text-3xl rounded-full bg-red-600 text-white"
     >
-      Hang Up
+      <ImPhoneHangUp/>
     </button>
   </div>
 );

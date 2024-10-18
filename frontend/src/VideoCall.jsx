@@ -176,7 +176,7 @@ const VideoCall = () => {
       </div>
 
       {/* Local Video - Always show the local video */}
-      <div className="absolute bottom-4 right-4 w-32 h-32 sm:w-40 sm:h-40">
+      <div className="absolute top-5 right-4 w-32 h-32 sm:w-40 sm:h-40 rounded-full">
         <Video ref={localVideoRef} isLocal={true} />
       </div>
 
