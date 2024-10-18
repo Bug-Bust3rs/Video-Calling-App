@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Peer from 'peerjs';
-import axios from 'axios'; // Add Axios for HTTP requests to the server
-const BASE_URL = 'http://localhost:5000';
+import axios from 'axios';
+
 const VideoCall = () => {
   const [username, setUsername] = useState('');
   const [formattedUsername, setFormattedUsername] = useState('');
@@ -15,70 +15,71 @@ const VideoCall = () => {
   const peerInstance = useRef(null);
   const currentCall = useRef(null);
 
+  // Your Vercel backend URL
+  const BASE_URL = 'https://video-calling-app-58yc.onrender.com';
+
   useEffect(() => {
-    // Ask for the username on page load
     const userInput = prompt('Please enter your username (e.g., puskar07):');
     const formatted = formatUsername(userInput);
     setUsername(userInput);
     setFormattedUsername(formatted);
 
-    // Initialize PeerJS and get Peer ID
+    // Initialize PeerJS
     const peer = new Peer(undefined, {
-      host: '/',
-      port: 5000,
+      host: 'video-calling-app-58yc.onrender.com', // Use your backend URL
       path: '/peerjs',
+      secure: true, // Use secure connection
     });
 
     peer.on('open', (id) => {
       setPeerId(id);
-      // Register the username with the server
       axios.post(`${BASE_URL}/register-username`, { username: formatted, peerId: id })
         .then(() => console.log('Username registered successfully'))
         .catch((error) => console.error('Registration failed:', error));
     });
 
-    // When receiving a call
     peer.on('call', (call) => {
-      setIncomingCall(call); // Store incoming call in state
+      setIncomingCall(call);
     });
 
     peerInstance.current = peer;
   }, []);
 
   const formatUsername = (name) => {
-    // Convert username to lowercase and remove spaces
     return name.toLowerCase().replace(/\s+/g, '') + Math.floor(Math.random() * 100);
   };
 
   const answerCall = () => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       localVideoRef.current.srcObject = stream;
-      incomingCall.answer(stream); // Answer the call with local stream
+      incomingCall.answer(stream);
       setInCall(true);
 
       incomingCall.on('stream', (remoteStream) => {
-        remoteVideoRef.current.srcObject = remoteStream; // Receive remote stream
+        remoteVideoRef.current.srcObject = remoteStream;
       });
 
-      currentCall.current = incomingCall; // Store current call
+      currentCall.current = incomingCall;
     });
   };
 
   const startCall = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/get-peer-id?username=${remoteUsername}`);
+      const response = await axios.get(`${BASE_URL}/get-peer-id`, {
+        params: { username: remoteUsername }
+      });
       const remotePeerId = response.data.peerId;
 
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
         localVideoRef.current.srcObject = stream;
-        const call = peerInstance.current.call(remotePeerId, stream); // Call remote peer
+        const call = peerInstance.current.call(remotePeerId, stream);
 
         call.on('stream', (remoteStream) => {
-          remoteVideoRef.current.srcObject = remoteStream; // Set remote stream
+          remoteVideoRef.current.srcObject = remoteStream;
         });
 
-        currentCall.current = call; // Store current call
-        setInCall(true); // Set call state to true
+        currentCall.current = call;
+        setInCall(true);
       });
     } catch (error) {
       console.error('Error fetching Peer ID:', error);
@@ -88,27 +89,23 @@ const VideoCall = () => {
 
   const hangUp = () => {
     if (currentCall.current) {
-      currentCall.current.close(); // Close the current call
-
-      // Stop local video stream
+      currentCall.current.close();
       const localStream = localVideoRef.current.srcObject;
       if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop()); // Stop all media tracks
+        localStream.getTracks().forEach((track) => track.stop());
       }
 
-      // Reset the video elements
       localVideoRef.current.srcObject = null;
       remoteVideoRef.current.srcObject = null;
 
-      setInCall(false); // Set call state to false
-      setIncomingCall(null); // Clear the incoming call
+      setInCall(false);
+      setIncomingCall(null);
     }
   };
 
   return (
     <div>
       <h2>Your Username: {formattedUsername}</h2>
-
       <input
         type="text"
         placeholder="Enter remote username"
@@ -116,9 +113,7 @@ const VideoCall = () => {
         onChange={(e) => setRemoteUsername(e.target.value)}
         disabled={inCall}
       />
-      <button onClick={startCall} disabled={inCall}>
-        Start Call
-      </button>
+      <button onClick={startCall} disabled={inCall}>Start Call</button>
 
       {incomingCall && !inCall && (
         <div>
